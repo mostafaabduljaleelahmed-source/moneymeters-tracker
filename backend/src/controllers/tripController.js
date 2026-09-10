@@ -1,0 +1,62 @@
+const TripModel = require('../models/tripModel');
+const LocationModel = require('../models/locationModel');
+const UserModel = require('../models/userModel');
+
+// بدء رحلة جديدة للمندوب الحالي (زر Start Trip)
+async function startTrip(req, res, next) {
+  try {
+    const trip = await TripModel.startTrip(req.user.id);
+    res.status(201).json({ trip });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// إنهاء الرحلة الحالية (زر End Trip)
+async function endTrip(req, res, next) {
+  try {
+    const { tripId } = req.params;
+    const trip = await TripModel.endTrip(tripId, req.user.id);
+    if (!trip) return res.status(404).json({ error: 'الرحلة غير موجودة' });
+    res.json({ trip });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// قائمة كل المناديب مع حالة الاتصال (للـ Sidebar)
+async function listDelegates(req, res, next) {
+  try {
+    const delegates = await UserModel.listDelegates();
+    res.json({ delegates });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// كل رحلات مندوب معين (لعرض تاريخ الرحلات واختيار رحلة للـ Replay)
+async function listTripsByDelegate(req, res, next) {
+  try {
+    const { delegateId } = req.params;
+    const trips = await TripModel.listByDelegate(delegateId);
+    res.json({ trips });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// مسار (Polyline) رحلة معينة بالكامل - يُستخدم في الخريطة والـ Replay
+async function getTripRoute(req, res, next) {
+  try {
+    const { tripId } = req.params;
+    const trip = await TripModel.findById(tripId);
+    if (!trip) return res.status(404).json({ error: 'الرحلة غير موجودة' });
+
+    const route = await LocationModel.getRouteByTrip(tripId);
+    res.json({ trip, route });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { startTrip, endTrip, listDelegates, listTripsByDelegate, getTripRoute };

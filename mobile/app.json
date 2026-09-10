@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "MoneyMeters Tracker",
+    "slug": "moneymeters-tracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "التطبيق يحتاج موقعك لتتبع رحلات التوصيل",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "التطبيق يحتاج تتبع موقعك في الخلفية أثناء الرحلة",
+        "UIBackgroundModes": ["location", "fetch"]
+      }
+    },
+    "android": {
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "التطبيق يحتاج موقعك لتتبع الرحلات حتى في الخلفية"
+        }
+      ]
+    ]
+  }
+}
