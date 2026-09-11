@@ -1,5 +1,6 @@
 const express = require('express');
 const {
+  getActiveTrip,
   startTrip,
   endTrip,
   listTripsByDelegate,
@@ -9,7 +10,8 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-// المندوب: بدء/إنهاء رحلة
+// المندوب: بدء/إنهاء رحلة + معرفة الرحلة النشطة الحالية
+router.get('/active', requireAuth, requireRole('delegate'), getActiveTrip);
 router.post('/start', requireAuth, requireRole('delegate'), startTrip);
 router.post('/:tripId/end', requireAuth, requireRole('delegate'), endTrip);
 

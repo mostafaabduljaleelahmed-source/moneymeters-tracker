@@ -19,8 +19,30 @@ export default function DelegateHome() {
   const distanceMRef = useRef(0);
   const tripIdRef = useRef(null);
 
+  // عند فتح الصفحة (أو عمل Refresh)، اتأكد هل فيه رحلة نشطة أصلاً واستأنف التتبع بدل ما تتصفر
   useEffect(() => {
+    let cancelled = false;
+
+    async function resumeActiveTrip() {
+      try {
+        const { data } = await api.get('/trips/active');
+        if (cancelled || !data.trip) return;
+
+        tripIdRef.current = data.trip.id;
+        distanceMRef.current = data.trip.distance_m || 0;
+        setTripId(data.trip.id);
+        setDistanceKm(distanceMRef.current / 1000);
+        setStatus('جاري تحديد الموقع...');
+        startWatching();
+      } catch (err) {
+        console.error('فشل التحقق من الرحلة النشطة', err);
+      }
+    }
+
+    resumeActiveTrip();
+
     return () => {
+      cancelled = true;
       if (watchIdRef.current !== null) navigator.geolocation.clearWatch(watchIdRef.current);
     };
   }, []);
@@ -79,6 +101,15 @@ export default function DelegateHome() {
     handleEndTrip();
   }
 
+  function startWatching() {
+    if (watchIdRef.current !== null) return;
+    watchIdRef.current = navigator.geolocation.watchPosition(onPosition, onPositionError, {
+      enableHighAccuracy: true,
+      maximumAge: 2000,
+      timeout: 15000,
+    });
+  }
+
   async function handleStartTrip() {
     setError('');
     if (!navigator.geolocation) {
@@ -93,12 +124,7 @@ export default function DelegateHome() {
       lastPointRef.current = null;
       setDistanceKm(0);
       setStatus('جاري تحديد الموقع...');
-
-      watchIdRef.current = navigator.geolocation.watchPosition(onPosition, onPositionError, {
-        enableHighAccuracy: true,
-        maximumAge: 2000,
-        timeout: 15000,
-      });
+      startWatching();
     } catch (err) {
       setError(err.response?.data?.error || 'فشل بدء الرحلة');
     }

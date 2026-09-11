@@ -2,6 +2,16 @@ const TripModel = require('../models/tripModel');
 const LocationModel = require('../models/locationModel');
 const UserModel = require('../models/userModel');
 
+// الرحلة النشطة الحالية للمندوب (تُستخدم لاستعادة حالة التتبع بعد Refresh)
+async function getActiveTrip(req, res, next) {
+  try {
+    const trip = await TripModel.getActiveTrip(req.user.id);
+    res.json({ trip: trip || null });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // بدء رحلة جديدة للمندوب الحالي (زر Start Trip)
 async function startTrip(req, res, next) {
   try {
@@ -59,4 +69,4 @@ async function getTripRoute(req, res, next) {
   }
 }
 
-module.exports = { startTrip, endTrip, listDelegates, listTripsByDelegate, getTripRoute };
+module.exports = { getActiveTrip, startTrip, endTrip, listDelegates, listTripsByDelegate, getTripRoute };
