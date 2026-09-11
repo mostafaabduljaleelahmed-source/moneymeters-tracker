@@ -1,5 +1,6 @@
 const LocationModel = require('../models/locationModel');
 const TripModel = require('../models/tripModel');
+const UserModel = require('../models/userModel');
 const { checkGeofenceAndIdle } = require('../sockets/alerts');
 
 // يستقبل موقع من تطبيق المندوب، يخزنه، ويبثه عبر Socket.io للداشبورد
@@ -38,8 +39,13 @@ async function receiveLocation(req, res, next) {
       }
     }
 
-    // بث الموقع مباشرة لأي مدير مفتوح صفحة المندوب ده (Socket room: delegate_<id>)
+    // اعتبر المندوب أونلاين طالما بيبعت مواقع (مهم لصفحة المندوب على المتصفح اللي مبتفتحش Socket)
     const io = req.app.get('io');
+    UserModel.setOnlineStatus(userId, true)
+      .then(() => io.to('admins').emit('delegate:status', { userId, isOnline: true, at: new Date().toISOString() }))
+      .catch((err) => console.error('فشل تحديث حالة الاتصال', err));
+
+    // بث الموقع مباشرة لأي مدير مفتوح صفحة المندوب ده (Socket room: delegate_<id>)
     io.to(`delegate_${userId}`).emit('location:update', {
       userId,
       tripId: activeTripId || null,

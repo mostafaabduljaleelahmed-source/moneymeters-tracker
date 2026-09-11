@@ -28,6 +28,11 @@ async function endTrip(req, res, next) {
     const { tripId } = req.params;
     const trip = await TripModel.endTrip(tripId, req.user.id);
     if (!trip) return res.status(404).json({ error: 'الرحلة غير موجودة' });
+
+    await UserModel.setOnlineStatus(req.user.id, false);
+    const io = req.app.get('io');
+    io.to('admins').emit('delegate:status', { userId: req.user.id, isOnline: false, at: new Date().toISOString() });
+
     res.json({ trip });
   } catch (err) {
     next(err);
