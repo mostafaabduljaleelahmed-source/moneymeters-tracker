@@ -13,6 +13,15 @@ export default function ReplayModal({ delegateId, onClose }) {
     api.get(`/trips/${delegateId}`).then(({ data }) => setTrips(data.trips || []));
   }, [delegateId]);
 
+  // اقفل النافذة بزرار Esc كمان، مش بس بالضغط على ✕
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   useEffect(() => {
     if (!selectedTripId) return;
     setLoading(true);
@@ -23,11 +32,20 @@ export default function ReplayModal({ delegateId, onClose }) {
   }, [selectedTripId]);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-white rounded-lg w-full max-w-3xl h-[80vh] flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <h3 className="font-bold">إعادة عرض رحلة</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+          <button
+            onClick={onClose}
+            aria-label="إغلاق"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-xl text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+          >
             ✕
           </button>
         </div>
